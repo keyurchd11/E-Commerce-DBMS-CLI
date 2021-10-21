@@ -26,8 +26,6 @@ except:
 #-----------------INSERT FUNCTIONS-----------------#
 
 # Insert/register a new customer
-
-
 def insertCustomer():
     print("INSERT CUSTOMER:\n")
     firstName = input("Enter first name: ")
@@ -144,7 +142,90 @@ def insertProduct():
 
 # Insert a new order and its payment
 def insertOrder():
-    pass
+    date = input("Enter date (yyyy-mm-dd): ")
+    customerID = input("Enter customer ID: ")
+    productList = input("Enter space-separated list of product IDs: ")
+    quantityList = input("Enter space-separated list of quantities of above products in order: ")
+    supplierList = input("Enter space-separated list of suppliers of above products in order: ")
+    amount = input("Enter total amount: ")
+    modeOfPayment = input("Enter mode of payment: ")
+    discount = input("Enter discount percentage: ")
+    shippingID = input("Enter shipping company ID: ")
+
+    productList = productList.split()
+    quantityList = quantityList.split()
+    supplierList = supplierList.split()
+
+    # Storing queries
+    query_1 = "SELECT * FROM Customer WHERE Customer_ID = %s"
+    query_2 = "SELECT * FROM Product WHERE Product_ID = %s" # Check available quantity also
+    query_3 = "SELECT * FROM Supplier WHERE Supplier_ID = %s"
+    query_4 = "SELECT * FROM Shipping_company WHERE Company_ID = %s"
+    query_5 = "INSERT INTO Orders VALUES(%s, %s)"
+    query_6 = "INSERT INTO Items_bought VALUES(%s, %s, %s)"
+    query_7 = "INSERT INTO Payment VALUES(%s, %s, %s, %s)"
+    query_8 = "INSERT INTO Product_purchased VALUES(%s, %s, %s, %s)"
+    query_9 = "UPDATE Product SET Available_quantity = Available_quantity - %s WHERE Product_ID = %s"
+    query_10 = "UPDATE Product SET In_stock = FALSE WHERE Product_ID = %s"
+
+    try:
+        # Checking for customer
+        cursor.execute(query_1, (customerID,))
+        if cursor.fetchone() is None:
+            print(f"\nINSERTION ERROR: Customer with ID {customerID} not found.\n")
+            return
+        
+        # Checking each product
+        i = 0
+        for productID in productList:
+            # Checking for product IDs and if enough products are available
+            cursor.execute(query_2, (productID,))
+            p = cursor.fetchone()
+            if p is None or p["Available_quantity"] < int(quantityList[i]):
+                print(f"\nINSERTION ERROR: Product with ID {productID} not found or sufficient quantity not available.\n")
+                return
+
+            # Checking for supplier IDs
+            cursor.execute(query_3, (supplierList[i]))
+            if cursor.fetchone() is None:
+                print(f"\nINSERTION ERROR: Supplier with ID {supplierList[i]} not found.\n")
+                return
+
+            i += 1
+
+        # Checking for shipping company
+        cursor.execute(query_4, (shippingID,))
+        if cursor.fetchone() is None:
+            print(f"\nINSERTION ERROR: Shipping company with ID {shippingID} not found.\n")
+            return
+
+        # Inserting into Orders
+        cursor.execute(query_5, (date, shippingID))
+        cursor.execute(
+            "SELECT * FROM Orders ORDER BY Order_ID DESC LIMIT 1")
+        orderID = cursor.fetchone()["Order_ID"]
+
+        # Inserting into Payment
+        cursor.execute(query_7, (orderID, amount, modeOfPayment, discount))
+
+        # Inserting into Items_bought and Product_purchased and updating Available_quantity, In_stock (if necessary)
+        i = 0
+        for productID in productList:
+            cursor.execute(query_6, (orderID, productID, quantityList[i]))
+            cursor.execute(query_8, (productID, customerID, orderID, supplierList[i]))
+            cursor.execute(query_9, (quantityList[i],))
+            cursor.execute(query_2, (productID,))
+            if cursor.fetchone()["Available_quantity"] == 0:
+                cursor.execute(query_10, (productID,))
+
+            i += 1
+    except Exception as e:
+        print(f"\nINSERTION ERROR: Failed to insert Order record - {e}\n")
+        return
+
+    # Committing the insertion made
+    print("\nSUCCESS: Successfully inserted Order record.\n")
+    connection.commit()
 
 
 # Insert a new supplier
@@ -210,18 +291,59 @@ def insertShippingCompany():
 
 # Inserting a new review
 def insertReview():
-    pass
+    print("ENTER REVIEW:\n")
+    productID = input("Enter product ID: ")
+    customerID = input("Enter customer ID: ")
+    stars = input("Enter stars: ")
+    content = input("Enter content: ")
+
+    # Storing the queries
+    query_1 = "SELECT * FROM Product WHERE Product_ID = %s"
+    query_2 = "SELECT * FROM Customer WHERE Customer_ID = %s"
+    query_3 = "INSERT INTO Review VALUES(%s, %s, %s, %s)"
+    query_4 = "SELECT * FROM Product_purchased WHERE Product_ID = %s AND Customer_ID = %s"
+
+    try:
+        # Checking if product ID exists
+        cursor.execute(query_1, (productID,))
+        if cursor.fetchone() is None:
+            print(f"\nINSERTION ERROR: Product with ID {productID} not found.\n")
+            return
+
+        # Checking if customer ID exists
+        cursor.execute(query_2, (customerID,))
+        if cursor.fetchone() is None:
+            print(f"\nINSERTION ERROR: Customer with ID {customerID} not found.\n")
+            return
+
+        # Checking if customer ordered the product
+        cursor.execute(query_4, (productID, customerID))
+        if cursor.fetchone() is None:
+            print(f"\nINSERTION ERROR: Customer with ID {customerID} did not order product with product ID {productID}.\n")
+            return
+
+        cursor.execute(query_3, (productID, customerID, stars, content))
+    except Exception as e:
+        print(f"\nINSERTION ERROR: Failed to insert Review record - {e}\n")
+        return
+
+    # Committing the insertion made
+    print("\nSUCCESS: Successfully inserted Review record.\n")
+    connection.commit()
 
 #-----------------DELETE FUNCTIONS-----------------#
 
+#-----------------UPDATE FUNCTIONS-----------------#
+
 #-----------------VIEW FUNCTIONS-----------------#
+
+#-----------------FUNCTIONAL REQUIREMENTS-----------------#
 
 #-----------------MAIN LOOP-----------------#
 
-
 # Creating a cursor to execute queries
 with connection.cursor() as cursor:
-    insertShippingCompany()
+    insertOrder()
 
 # Closing the connection
 connection.close()
