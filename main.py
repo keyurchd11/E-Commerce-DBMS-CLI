@@ -161,7 +161,7 @@ def insertOrder():
     query_2 = "SELECT * FROM Product WHERE Product_ID = %s" # Check available quantity also
     query_3 = "SELECT * FROM Supplier WHERE Supplier_ID = %s"
     query_4 = "SELECT * FROM Shipping_company WHERE Company_ID = %s"
-    query_5 = "INSERT INTO Orders VALUES(%s, %s)"
+    query_5 = "INSERT INTO Orders(Order_date, Shipping_company_ID) VALUES(%s, %s)"
     query_6 = "INSERT INTO Items_bought VALUES(%s, %s, %s)"
     query_7 = "INSERT INTO Payment VALUES(%s, %s, %s, %s)"
     query_8 = "INSERT INTO Product_purchased VALUES(%s, %s, %s, %s)"
@@ -213,7 +213,7 @@ def insertOrder():
         for productID in productList:
             cursor.execute(query_6, (orderID, productID, quantityList[i]))
             cursor.execute(query_8, (productID, customerID, orderID, supplierList[i]))
-            cursor.execute(query_9, (quantityList[i],))
+            cursor.execute(query_9, (quantityList[i], productID))
             cursor.execute(query_2, (productID,))
             if cursor.fetchone()["Available_quantity"] == 0:
                 cursor.execute(query_10, (productID,))
@@ -343,7 +343,7 @@ def insertReview():
 
 # Creating a cursor to execute queries
 with connection.cursor() as cursor:
-    insertOrder()
+    insertReview()
 
 # Closing the connection
 connection.close()
