@@ -65,6 +65,7 @@ CREATE TABLE Product(
     Category VARCHAR(50) NOT NULL,
     Brand VARCHAR(50) NOT NULL,
     Model VARCHAR(50) NOT NULL,
+    Supplier_ID INTEGER NOT NULL,
     MRP INTEGER NOT NULL,
     Buying_price INTEGER NOT NULL,
     Selling_price INTEGER NOT NULL,
@@ -84,14 +85,14 @@ CREATE TABLE Shipping_company(
 CREATE TABLE Shipping_company_contact_number(
 	Shipping_company_ID INTEGER NOT NULL,
     Phone_number INTEGER NOT NULL UNIQUE,
-    FOREIGN KEY(Shipping_company_ID) REFERENCES Shipping_company(Company_ID)
+    FOREIGN KEY(Shipping_company_ID) REFERENCES Shipping_company(Company_ID) ON DELETE CASCADE
 );
 
 CREATE TABLE Shipping_company_email(
 	Shipping_company_ID INTEGER NOT NULL,
     Email VARCHAR(100) NOT NULL UNIQUE,
     PRIMARY KEY(Shipping_company_ID),
-    FOREIGN KEY(Shipping_company_ID) REFERENCES Shipping_company(Company_ID)
+    FOREIGN KEY(Shipping_company_ID) REFERENCES Shipping_company(Company_ID) ON DELETE CASCADE
 );
 
 -- Order (Renamed to Orders to prevent clash with keyword)
@@ -124,13 +125,13 @@ CREATE TABLE Supplier(
 CREATE TABLE Supplier_contact_number(
 	Supplier_ID INTEGER NOT NULL UNIQUE,
     Supplier_number INTEGER NOT NULL UNIQUE,
-    FOREIGN KEY(Supplier_ID) REFERENCES Supplier(Supplier_ID)
+    FOREIGN KEY(Supplier_ID) REFERENCES Supplier(Supplier_ID) ON DELETE CASCADE
 );
 
 CREATE TABLE Supplier_email(
 	Supplier_ID INTEGER NOT NULL UNIQUE,
     Email VARCHAR(100) NOT NULL UNIQUE,
-    FOREIGN KEY(Supplier_ID) REFERENCES Supplier(Supplier_ID)
+    FOREIGN KEY(Supplier_ID) REFERENCES Supplier(Supplier_ID) ON DELETE CASCADE
 );
 
 -- Review
@@ -140,8 +141,8 @@ CREATE TABLE Review(
     Customer_ID INTEGER NOT NULL,
     Stars INTEGER NOT NULL,
     Content TEXT,
-    FOREIGN KEY(Product_ID) REFERENCES Product(Product_ID),
-    FOREIGN KEY(Customer_ID) REFERENCES Customer(Customer_ID)
+    FOREIGN KEY(Product_ID) REFERENCES Product(Product_ID) ON DELETE CASCADE,
+    FOREIGN KEY(Customer_ID) REFERENCES Customer(Customer_ID) ON DELETE CASCADE
 );
 
 -- Items Bought
@@ -150,8 +151,8 @@ CREATE TABLE Items_bought(
     Order_ID INTEGER NOT NULL,
     Product_ID INTEGER NOT NULL,
     Quantity INTEGER NOT NULL,
-    FOREIGN KEY(Order_ID) REFERENCES Orders(Order_ID),
-    FOREIGN KEY(Product_ID) REFERENCES Product(Product_ID)
+    FOREIGN KEY(Order_ID) REFERENCES Orders(Order_ID) ON DELETE CASCADE,
+    FOREIGN KEY(Product_ID) REFERENCES Product(Product_ID) ON DELETE CASCADE
 );
 
 -- Payment
@@ -161,7 +162,7 @@ CREATE TABLE Payment(
     Amount INTEGER NOT NULL,
     Mode_of_payment VARCHAR(20) NOT NULL,
     Discount_Percentage INTEGER NOT NULL,
-    FOREIGN KEY(Order_ID) REFERENCES Orders(Order_ID)
+    FOREIGN KEY(Order_ID) REFERENCES Orders(Order_ID) ON DELETE CASCADE
 );
 
 -- Product Purchased
@@ -171,8 +172,8 @@ CREATE TABLE Product_purchased(
     Customer_ID INTEGER NOT NULL,
     Order_ID INTEGER NOT NULL,
     Supplier_ID INTEGER NOT NULL,
-    FOREIGN KEY(Product_ID) REFERENCES Product(Product_ID),
-    FOREIGN KEY(Customer_ID) REFERENCES Customer(Customer_ID),
-    FOREIGN KEY(Order_ID) REFERENCES Orders(Order_ID),
-    FOREIGN KEY(Supplier_ID) REFERENCES Supplier(Supplier_ID)
+    FOREIGN KEY(Product_ID) REFERENCES Product(Product_ID) ON DELETE CASCADE,
+    FOREIGN KEY(Customer_ID) REFERENCES Customer(Customer_ID) ON DELETE CASCADE,
+    FOREIGN KEY(Order_ID) REFERENCES Orders(Order_ID) ON DELETE CASCADE,
+    FOREIGN KEY(Supplier_ID) REFERENCES Supplier(Supplier_ID) ON DELETE CASCADE
 );

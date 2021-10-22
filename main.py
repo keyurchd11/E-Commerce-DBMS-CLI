@@ -120,16 +120,29 @@ def insertProduct():
     category = input("Enter category: ")
     brand = input("Enter brand: ")
     model = input("Enter model: ")
+    supplierID = input("Enter supplier ID: ")
     mrp = input("Enter MRP: ")
     buyPrice = input("Enter buying price: ")
     sellPrice = input("Enter selling price: ")
     availableQuantity = input("Enter available quantity: ")
+    
+    boolVar = None
+    if int(availableQuantity) <= 0:
+        print("\nINSERTION ERROR: Available quantity must be more than 0.\n")
+        return
 
-    # Storing the query
-    query = "INSERT INTO Product(Category, Brand, Model, MRP, Buying_price, Selling_price, Available_quantity, In_stock) VALUES(%s, %s, %s, %s, %s, %s, %s, TRUE)"
+    # Storing the queries
+    query_1 = "SELECT * FROM Supplier WHERE Supplier_ID = %s"
+    query_2 = "INSERT INTO Product(Category, Brand, Model, Supplier_ID, MRP, Buying_price, Selling_price, Available_quantity, In_stock) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, TRUE)"
 
     try:
-        cursor.execute(query, (category, brand, model, mrp,
+        # Checking for supplier ID
+        cursor.execute(query_1, (supplierID,))
+        if cursor.fetchone() is None:
+            print(f"\nINSERTION ERROR: Supplier with ID {supplierID} not found.\n")
+            return
+
+        cursor.execute(query_2, (category, brand, model, supplierID, mrp,
                        buyPrice, sellPrice, availableQuantity))
     except Exception as e:
         print(f"\nINSERTION ERROR: Failed to insert Product record - {e}\n")
@@ -142,11 +155,11 @@ def insertProduct():
 
 # Insert a new order and its payment
 def insertOrder():
+    print("ENTER ORDER:\n")
     date = input("Enter date (yyyy-mm-dd): ")
     customerID = input("Enter customer ID: ")
     productList = input("Enter space-separated list of product IDs: ")
     quantityList = input("Enter space-separated list of quantities of above products in order: ")
-    supplierList = input("Enter space-separated list of suppliers of above products in order: ")
     amount = input("Enter total amount: ")
     modeOfPayment = input("Enter mode of payment: ")
     discount = input("Enter discount percentage: ")
@@ -154,12 +167,11 @@ def insertOrder():
 
     productList = productList.split()
     quantityList = quantityList.split()
-    supplierList = supplierList.split()
+    supplierList = []
 
     # Storing queries
     query_1 = "SELECT * FROM Customer WHERE Customer_ID = %s"
-    query_2 = "SELECT * FROM Product WHERE Product_ID = %s" # Check available quantity also
-    query_3 = "SELECT * FROM Supplier WHERE Supplier_ID = %s"
+    query_2 = "SELECT * FROM Product WHERE Product_ID = %s"
     query_4 = "SELECT * FROM Shipping_company WHERE Company_ID = %s"
     query_5 = "INSERT INTO Orders(Order_date, Shipping_company_ID) VALUES(%s, %s)"
     query_6 = "INSERT INTO Items_bought VALUES(%s, %s, %s)"
@@ -185,12 +197,8 @@ def insertOrder():
                 print(f"\nINSERTION ERROR: Product with ID {productID} not found or sufficient quantity not available.\n")
                 return
 
-            # Checking for supplier IDs
-            cursor.execute(query_3, (supplierList[i]))
-            if cursor.fetchone() is None:
-                print(f"\nINSERTION ERROR: Supplier with ID {supplierList[i]} not found.\n")
-                return
-
+            # Storing supplier ID
+            supplierList.append(str(p["Supplier_ID"]))
             i += 1
 
         # Checking for shipping company
@@ -335,15 +343,27 @@ def insertReview():
 
 #-----------------UPDATE FUNCTIONS-----------------#
 
-#-----------------VIEW FUNCTIONS-----------------#
+#-----------------RETRIEVALS-----------------#
 
-#-----------------FUNCTIONAL REQUIREMENTS-----------------#
+#-----------------ADDITIONAL FUNCTIONS-----------------#
+
+# To find the number of products listed by a Supplier from the Products table
+def numProductsListed():
+    print("DISPLAY NUMBER OF PRODUCTS LISTED BY SUPPLIER:\n")
+    supplierID = input("Enter supplier ID: ")
+    query = "SELECT COUNT(*) FROM Product WHERE Supplier_ID = %s"
+
+    try:
+        cursor.execute(query, (supplierID,))
+        print(f"\nNumber of products listed by supplier with ID {supplierID}: {cursor.fetchone()['COUNT(*)']}\n")
+    except:
+        print("\nEXECUTION ERROR: Failed to execute query.\n")
 
 #-----------------MAIN LOOP-----------------#
 
 # Creating a cursor to execute queries
 with connection.cursor() as cursor:
-    insertReview()
+    insertProduct()
 
 # Closing the connection
 connection.close()
