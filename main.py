@@ -1,3 +1,4 @@
+from numpy import product
 import pymysql
 import pymysql.cursors
 import os
@@ -341,6 +342,181 @@ def insertReview():
 
 #-----------------DELETE FUNCTIONS-----------------#
 
+# Deleting a customer
+def deleteCustomer():
+    print("DELETE CUSTOMER:\n")
+    customerID = input("Enter ID of customer to be deleted: ")
+
+    query_1 = "SELECT * FROM Customer WHERE Customer_ID = %s"
+    query_2 = "DELETE FROM Customer WHERE Customer_ID = %s"
+
+    try:
+        # Checking if customer ID exists
+        cursor.execute(query_1, (customerID,))
+        if cursor.fetchone() is None:
+            print(f"\nDELETION ERROR: Customer with ID {customerID} not found.\n")
+            return
+
+        cursor.execute(query_2, (customerID,))
+    except Exception as e:
+        print(f"\nDELETION ERROR: Failed to delete Customer record - {e}\n")
+        return
+
+    # Committing the deletion made
+    print("\nSUCCESS: Successfully deleted Customer record.\n")
+    connection.commit()
+
+
+# Deleting an employee
+def deleteEmployee():
+    print("DELETE EMPLOYEE:\n")
+    employeeID = input("Enter ID of employee to be deleted: ")
+
+    query_1 = "SELECT * FROM Employee WHERE Employee_ID = %s"
+    query_2 = "DELETE FROM Employee WHERE Employee_ID = %s"
+
+    try:
+        # Checking if employee ID exists
+        cursor.execute(query_1, (employeeID,))
+        if cursor.fetchone() is None:
+            print(f"\nDELETION ERROR: Employee with ID {employeeID} not found.\n")
+            return
+
+        cursor.execute(query_2, (employeeID,))
+    except Exception as e:
+        print(f"\nDELETION ERROR: Failed to delete Employee record - {e}\n")
+        return
+
+    # Committing the deletion made
+    print("\nSUCCESS: Successfully deleted Employee record.\n")
+    connection.commit()
+
+
+# Deleting a product
+def deleteProduct():
+    print("DELETE PRODUCT:\n")
+    productID = input("Enter ID of product to be deleted: ")
+
+    query_1 = "SELECT * FROM Product WHERE Product_ID = %s"
+    query_2 = "DELETE FROM Product WHERE Product_ID = %s"
+
+    try:
+        # Checking if product ID exists
+        cursor.execute(query_1, (productID,))
+        if cursor.fetchone() is None:
+            print(f"\nDELETION ERROR: Product with ID {productID} not found.\n")
+            return
+
+        cursor.execute(query_2, (productID,))
+    except Exception as e:
+        print(f"\nDELETION ERROR: Failed to delete Product record - {e}\n")
+        return
+
+    # Committing the deletion made
+    print("\nSUCCESS: Successfully deleted Product record.\n")
+    connection.commit()
+
+
+# Deleting a supplier
+def deleteSupplier():
+    print("DELETE SUPPLIER:\n")
+    supplierID = input("Enter ID of supplier to be deleted: ")
+
+    query_1 = "SELECT * FROM Supplier WHERE Supplier_ID = %s"
+    query_2 = "DELETE FROM Supplier WHERE Supplier_ID = %s"
+
+    try:
+        # Checking if supplier ID exists
+        cursor.execute(query_1, (supplierID,))
+        if cursor.fetchone() is None:
+            print(f"\nDELETION ERROR: Supplier with ID {supplierID} not found.\n")
+            return
+
+        cursor.execute(query_2, (supplierID,))
+    except Exception as e:
+        print(f"\nDELETION ERROR: Failed to delete Supplier record - {e}\n")
+        return
+
+    # Committing the deletion made
+    print("\nSUCCESS: Successfully deleted Supplier record.\n")
+    connection.commit()
+
+
+# Deleting a shipping company
+def deleteShippingCompany():
+    print("DELETE SHIPPING COMPANY:\n")
+    shippingID = input("Enter ID of shipping company to be deleted: ")
+
+    query_1 = "SELECT * FROM Shipping_company WHERE Company_ID = %s"
+    query_2 = "DELETE FROM Shipping_company WHERE Company_ID = %s"
+
+    try:
+        # Checking if shipping company ID exists
+        cursor.execute(query_1, (shippingID,))
+        if cursor.fetchone() is None:
+            print(f"\nDELETION ERROR: Shipping company with ID {shippingID} not found.\n")
+            return
+
+        cursor.execute(query_2, (shippingID,))
+    except Exception as e:
+        print(f"\nDELETION ERROR: Failed to delete Shipping Company record - {e}\n")
+        return
+
+    # Committing the deletion made
+    print("\nSUCCESS: Successfully deleted Shipping Company record.\n")
+    connection.commit()
+
+
+# Deleting an order
+def deleteOrder():
+    print("DELETE ORDER:\n")
+    orderID = input("Enter ID of order to be deleted: ")
+
+    query_1 = "SELECT * FROM Orders WHERE Order_ID = %s"
+    query_2 = "DELETE FROM Orders WHERE Order_ID = %s"
+
+    try:
+        # Checking if order ID exists
+        cursor.execute(query_1, (orderID,))
+        if cursor.fetchone() is None:
+            print(f"\nDELETION ERROR: Order with ID {orderID} not found.\n")
+            return
+
+        cursor.execute(query_2, (orderID,))
+    except Exception as e:
+        print(f"\nDELETION ERROR: Failed to delete Order record - {e}\n")
+        return
+
+    # Committing the deletion made
+    print("\nSUCCESS: Successfully deleted Order record.\n")
+    connection.commit()
+
+
+# Deleting a review
+def deleteReview():
+    print("DELETE REVIEW:\n")
+    productID = input("Enter product ID of review to be deleted: ")
+    customerID = input("Enter customer ID of review to be deleted: ")
+
+    query_1 = "SELECT * FROM Review WHERE Product_ID = %s AND Customer_ID = %s"
+    query_2 = "DELETE FROM Review WHERE Product_ID = %s AND Customer_ID = %s"
+
+    try:
+        # Checking if review exists
+        cursor.execute(query_1, (productID, customerID))
+        if cursor.fetchone() is None:
+            print(f"\nDELETION ERROR: Review with product ID {productID} and customer ID {customerID} not found.\n")
+            return
+
+        cursor.execute(query_2, (productID, customerID))
+    except Exception as e:
+        print(f"\nDELETION ERROR: Failed to delete Review record - {e}\n")
+        return
+
+    # Committing the deletion made
+    print("\nSUCCESS: Successfully deleted Review record.\n")
+    connection.commit()
+
 #-----------------UPDATE FUNCTIONS-----------------#
 
 #-----------------RETRIEVALS-----------------#
@@ -363,7 +539,7 @@ def numProductsListed():
 
 # Creating a cursor to execute queries
 with connection.cursor() as cursor:
-    insertProduct()
+    deleteOrder()
 
 # Closing the connection
 connection.close()

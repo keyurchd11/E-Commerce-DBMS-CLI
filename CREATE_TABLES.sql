@@ -58,6 +58,26 @@ CREATE TABLE Employee_email(
     FOREIGN KEY(Employee_ID) REFERENCES Employee(Employee_ID) ON DELETE CASCADE
 );
 
+-- Supplier
+
+CREATE TABLE Supplier(
+	Supplier_ID INTEGER NOT NULL AUTO_INCREMENT,
+    Company VARCHAR(100) NOT NULL,
+    PRIMARY KEY(Supplier_ID)
+);
+
+CREATE TABLE Supplier_contact_number(
+	Supplier_ID INTEGER NOT NULL UNIQUE,
+    Supplier_number INTEGER NOT NULL UNIQUE,
+    FOREIGN KEY(Supplier_ID) REFERENCES Supplier(Supplier_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE Supplier_email(
+	Supplier_ID INTEGER NOT NULL UNIQUE,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    FOREIGN KEY(Supplier_ID) REFERENCES Supplier(Supplier_ID) ON DELETE CASCADE
+);
+
 -- Product
 
 CREATE TABLE Product(
@@ -72,6 +92,7 @@ CREATE TABLE Product(
     Available_quantity INTEGER NOT NULL,
     In_stock BOOL NOT NULL,
     PRIMARY KEY(Product_ID)
+    FOREIGN KEY(Supplier_ID) REFERENCES Supplier(Supplier_ID) ON DELETE CASCADE
 );
 
 -- Shipping Company
@@ -112,26 +133,6 @@ CREATE TABLE Developer(
     Project_name VARCHAR(50) NOT NULL,
     PRIMARY KEY(Employee_ID),
     FOREIGN KEY(Employee_ID) REFERENCES Employee(Employee_ID) ON DELETE CASCADE
-);
-
--- Supplier
-
-CREATE TABLE Supplier(
-	Supplier_ID INTEGER NOT NULL AUTO_INCREMENT,
-    Company VARCHAR(100) NOT NULL,
-    PRIMARY KEY(Supplier_ID)
-);
-
-CREATE TABLE Supplier_contact_number(
-	Supplier_ID INTEGER NOT NULL UNIQUE,
-    Supplier_number INTEGER NOT NULL UNIQUE,
-    FOREIGN KEY(Supplier_ID) REFERENCES Supplier(Supplier_ID) ON DELETE CASCADE
-);
-
-CREATE TABLE Supplier_email(
-	Supplier_ID INTEGER NOT NULL UNIQUE,
-    Email VARCHAR(100) NOT NULL UNIQUE,
-    FOREIGN KEY(Supplier_ID) REFERENCES Supplier(Supplier_ID) ON DELETE CASCADE
 );
 
 -- Review
