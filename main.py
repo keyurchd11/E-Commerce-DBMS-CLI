@@ -1,4 +1,4 @@
-from numpy import product
+from numpy import intp, product
 import pymysql
 import pymysql.cursors
 import os
@@ -519,6 +519,130 @@ def deleteReview():
 
 #-----------------UPDATE FUNCTIONS-----------------#
 
+# Updating a customer
+def updateCustomer():
+    print("UPDATE CUSTOMER:\n")
+    print("Press Enter for any attribute you do not wish to update.\n")
+    customer_ID = input("Enter ID of customer to be updated: ")
+
+    cursor.execute("SELECT * FROM Customer WHERE Customer_ID = %s", (customer_ID,))
+    row = cursor.fetchone()
+    if row is None:
+        print(f"\nUPDATION ERROR: Customer with ID {customer_ID} not found.\n")
+        return
+
+    firstName = input("Enter new first name: ")
+    if firstName !=  "": row["First_name"] = firstName
+    lastName = input("Enter new last name: ")
+    if lastName != "": row["Last_name"] = lastName
+    date = input("Enter new date of birth (yyyy-mm-dd): ")
+    gender = input("Enter new gender: ")
+    if gender != "": row["Gender"] = gender
+    address = input("Enter new address: ")
+    if address != "": row["Address"] = address
+    email = input("Enter new email: ")
+    number = input("Enter new number: ")
+
+    if date != "":
+        date = date.split("-")
+        row["Day_of_birth"], row["Month_of_birth"], row["Year_of_birth"] = date[2], date[1], date[0]
+
+    # Storing queries
+    query_1 = "UPDATE Customer SET First_name = %s, Last_name = %s, Day_of_birth = %s, Month_of_birth = %s, Year_of_birth = %s, Gender = %s, Address = %s WHERE Customer_ID = %s"
+    query_2 = "UPDATE Customer_email SET Email = %s WHERE Customer_ID = %s"
+    query_3 = "UPDATE Customer_phone_number SET Number = %s WHERE Customer_ID = %s"
+
+    try:
+        cursor.execute(query_1, (row["First_name"], row["Last_name"], row["Day_of_birth"], row["Month_of_birth"], row["Year_of_birth"], row["Gender"], row["Address"], customer_ID))
+
+        if email != "":
+            cursor.execute(query_2, (email, customer_ID))
+        if number != "":
+            cursor.execute(query_3, (number, customer_ID))
+
+    except Exception as e:
+        print(f"\nUPDATION ERROR: Failed to update Customer record - {e}\n")
+        return
+
+    # Committing the updation made
+    print("\nSUCCESS: Successfully updated Customer record.\n")
+    connection.commit()
+
+
+# Updating an employee
+def updateEmployee():
+    print("UPDATE EMPLOYEE:\n")
+    print("Press Enter for any attribute you do not wish to update.\n")
+    employee_ID = input("Enter ID of employee to be updated: ")
+
+    cursor.execute("SELECT * FROM Employee WHERE Employee_ID = %s", (employee_ID,))
+    row = cursor.fetchone()
+    if row is None:
+        print(f"\nUPDATION ERROR: Customer with ID {employee_ID} not found.\n")
+        return
+
+    firstName = input("Enter new first name: ")
+    if firstName !=  "": row["First_name"] = firstName
+    lastName = input("Enter new last name: ")
+    if lastName != "": row["Last_name"] = lastName
+    date = input("Enter new date of birth (yyyy-mm-dd): ")
+    gender = input("Enter new gender: ")
+    if gender != "": row["Gender"] = gender
+    address = input("Enter new address: ")
+    if address != "": row["Address"] = address
+    salary = input("Enter new salary: ")
+    if salary != "": row["Salary"] = salary
+    department = input("Enter new department: ") # Check for removal from developer
+    oldDepartment = row["Department"]
+    if department != "": row["Department"] = department
+    designation = input("Enter new designation: ")
+    if designation != "": row["Designation"] = designation
+    dateOfJoining = input("Enter new date of joining (yyyy-mm-dd): ")
+    if dateOfJoining != "": row["Date_of_joining"] = dateOfJoining
+    email = input("Enter new email: ")
+    number = input("Enter new number: ")
+
+    if date != "":
+        date = date.split("-")
+        row["Day_of_birth"], row["Month_of_birth"], row["Year_of_birth"] = date[2], date[1], date[0]
+
+    # Storing queries
+    query_1 = "UPDATE Employee SET First_name = %s, Last_name = %s, Day_of_birth = %s, Month_of_birth = %s, Year_of_birth = %s, Gender = %s, Address = %s, Salary = %s, Department = %s, Designation = %s, Date_of_joining = %s WHERE Employee_ID = %s"
+    query_2 = "UPDATE Employee_email SET Email = %s WHERE Employee_ID = %s"
+    query_3 = "UPDATE Employee_phone_number SET Number = %s WHERE Employee_ID = %s"
+
+    try:
+        cursor.execute(query_1, (row["First_name"], row["Last_name"], row["Day_of_birth"], row["Month_of_birth"], row["Year_of_birth"], row["Gender"], row["Address"], row["Salary"], row["Department"], row["Designation"], row["Date_of_joining"], employee_ID))
+
+        if email != "":
+            cursor.execute(query_2, (email, employee_ID))
+        if number != "":
+            cursor.execute(query_3, (number, employee_ID))
+
+        # Accounting for the Developer subclass
+        if oldDepartment != row["Department"]:
+            if oldDepartment == "Developer":
+                cursor.execute("DELETE FROM Developer WHERE Employee_ID = %s", (employee_ID,))
+            elif row["Department"] == "Developer":
+                project = input("Enter project name: ")
+                cursor.execute("INSERT INTO Developer VALUES(%s, %s)",
+                           (employee_ID, project))
+        
+        elif row["Department"] == "Developer":
+            project = input("Enter new project name: ")
+            cursor.execute("UPDATE Developer SET Project_name = %s WHERE Employee_ID = %s", (project, employee_ID))
+
+    except Exception as e:
+        print(f"\nUPDATION ERROR: Failed to update Employee record - {e}\n")
+        return
+
+    # Committing the updation made
+    print("\nSUCCESS: Successfully updated Employee record.\n")
+    connection.commit()
+
+
+#-----------------VIEW FUNCTIONS-----------------#
+
 #-----------------RETRIEVALS-----------------#
 
 #-----------------ADDITIONAL FUNCTIONS-----------------#
@@ -539,7 +663,7 @@ def numProductsListed():
 
 # Creating a cursor to execute queries
 with connection.cursor() as cursor:
-    deleteOrder()
+    updateEmployee()
 
 # Closing the connection
 connection.close()
