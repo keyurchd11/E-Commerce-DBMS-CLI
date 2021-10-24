@@ -641,6 +641,137 @@ def updateEmployee():
     connection.commit()
 
 
+# Updating a product
+def updateProduct():
+    print("UPDATE PRODUCT:\n")
+    print("Press Enter for any attribute you do not wish to update.\n")
+    product_ID = input("Enter ID of product to be updated: ")
+
+    cursor.execute("SELECT * FROM Product WHERE Product_ID = %s", (product_ID,))
+    row = cursor.fetchone()
+    if row is None:
+        print(f"\nUPDATION ERROR: Product with ID {product_ID} not found.\n")
+        return
+
+    category = input("Enter new category: ")
+    if category !=  "": row["Category"] = category
+    brand = input("Enter new brand: ")
+    if brand != "": row["Brand"] = brand
+    model = input("Enter new model: ")
+    if model != "": row["Model"] = model
+    supplierID = input("Enter new supplier ID: ")
+    if supplierID != "": row["Supplier_ID"] = supplierID
+    mrp = input("Enter new MRP: ")
+    if mrp != "": row["MRP"] = mrp
+    buyPrice = input("Enter new buying price: ")
+    if buyPrice != "": row["Buying_price"] = buyPrice
+    sellPrice = input("Enter new selling price: ")
+    if sellPrice != "": row["Selling_price"] = sellPrice
+    availableQuantity = input("Enter new available quantity: ")
+    if availableQuantity != "": row["Available_quantity"] = availableQuantity
+
+    row["In_stock"] = "1"
+    if int(row["Available_quantity"]) <= 0:
+        row["In_stock"] = "0"
+
+    # Storing queries
+    query_1 = "SELECT * FROM Supplier WHERE Supplier_ID = %s"
+    query_2 = "UPDATE Product SET Category = %s, Brand = %s, Model = %s, Supplier_ID = %s, MRP = %s, Buying_price = %s, Selling_price = %s, Available_quantity = %s, In_stock = %s WHERE Product_ID = %s"
+
+    # Checking whether supplier ID exists
+    cursor.execute(query_1, (row["Supplier_ID"],))
+    if cursor.fetchone() is None:
+        print(f"\nUPDATION ERROR: Supplier with ID {supplierID} not found.\n")
+        return
+
+    try:
+        cursor.execute(query_2, (row["Category"], row["Brand"], row["Model"], row["Supplier_ID"], row["MRP"], row["Buying_price"], row["Selling_price"], row["Available_quantity"], row["In_stock"], product_ID))
+    except Exception as e:
+        print(f"\nUPDATION ERROR: Failed to update Product record - {e}\n")
+        return
+
+    # Committing the updation made
+    print("\nSUCCESS: Successfully updated Product record.\n")
+    connection.commit()
+
+
+# Updating a supplier
+def updateSupplier():
+    print("UPDATE SUPPLIER:\n")
+    print("Press Enter for any attribute you do not wish to update.\n")
+    supplier_ID = input("Enter ID of supplier to be updated: ")
+
+    cursor.execute("SELECT * FROM Supplier WHERE Supplier_ID = %s", (supplier_ID,))
+    row = cursor.fetchone()
+    if row is None:
+        print(f"\nUPDATION ERROR: Supplier with ID {supplier_ID} not found.\n")
+        return
+
+    company = input("Enter new company name: ")
+    if company !=  "": row["Company"] = company
+    email = input("Enter new email: ")
+    number = input("Enter new number: ")
+
+    # Storing queries
+    query_1 = "UPDATE Supplier SET Company = %s WHERE Supplier_ID = %s"
+    query_2 = "UPDATE Supplier_email SET Email = %s WHERE Supplier_ID = %s"
+    query_3 = "UPDATE Supplier_contact_number SET Supplier_number = %s WHERE Supplier_ID = %s"
+
+    try:
+        cursor.execute(query_1, (row["Company"], supplier_ID))
+
+        if email != "":
+            cursor.execute(query_2, (email, supplier_ID))
+        if number != "":
+            cursor.execute(query_3, (number, supplier_ID))
+
+    except Exception as e:
+        print(f"\nUPDATION ERROR: Failed to update Supplier record - {e}\n")
+        return
+
+    # Committing the updation made
+    print("\nSUCCESS: Successfully updated Supplier record.\n")
+    connection.commit()
+
+
+# Updating a shipping company
+def updateShippingCompany():
+    print("UPDATE SHIPPING COMPANY:\n")
+    print("Press Enter for any attribute you do not wish to update.\n")
+    shipping_ID = input("Enter ID of shipping company to be updated: ")
+
+    cursor.execute("SELECT * FROM Shipping_company WHERE Company_ID = %s", (shipping_ID,))
+    row = cursor.fetchone()
+    if row is None:
+        print(f"\nUPDATION ERROR: Shipping_company with ID {shipping_ID} not found.\n")
+        return
+
+    company = input("Enter new company name: ")
+    if company !=  "": row["Company_name"] = company
+    email = input("Enter new email: ")
+    number = input("Enter new number: ")
+
+    # Storing queries
+    query_1 = "UPDATE Shipping_company SET Company_name = %s WHERE Company_ID = %s"
+    query_2 = "UPDATE Shipping_company_email SET Email = %s WHERE Shipping_company_ID = %s"
+    query_3 = "UPDATE Shipping_company_contact_number SET Phone_number = %s WHERE Shipping_company_ID = %s"
+
+    try:
+        cursor.execute(query_1, (row["Company_name"], shipping_ID))
+
+        if email != "":
+            cursor.execute(query_2, (email, shipping_ID))
+        if number != "":
+            cursor.execute(query_3, (number, shipping_ID))
+
+    except Exception as e:
+        print(f"\nUPDATION ERROR: Failed to update Shipping Company record - {e}\n")
+        return
+
+    # Committing the updation made
+    print("\nSUCCESS: Successfully updated Shipping Company record.\n")
+    connection.commit()
+
 #-----------------VIEW FUNCTIONS-----------------#
 
 #-----------------RETRIEVALS-----------------#
@@ -663,7 +794,7 @@ def numProductsListed():
 
 # Creating a cursor to execute queries
 with connection.cursor() as cursor:
-    updateEmployee()
+    updateShippingCompany()
 
 # Closing the connection
 connection.close()
