@@ -1,8 +1,9 @@
-from numpy import intp, product
 import pymysql
 import pymysql.cursors
 import os
 import sys
+from tabulate import tabulate
+from datetime import date
 from dotenv import load_dotenv
 
 #-----------------ESTABLISHING CONNECTION-----------------#
@@ -81,7 +82,7 @@ def insertEmployee():
     dateOfJoining = input("Enter date of joining (yyyy-mm-dd): ")
 
     dob = dateOfBirth.split("-")
-    day, month, year = dob[0], dob[1], dob[2]
+    day, month, year = dob[2], dob[1], dob[0]
 
     # Storing the queries
     query_1 = "INSERT INTO Employee(First_name, Last_name, Day_of_birth, Month_of_birth, Year_of_birth, Gender, Address, Salary, Department, Designation, Date_of_joining) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
@@ -772,9 +773,103 @@ def updateShippingCompany():
     print("\nSUCCESS: Successfully updated Shipping Company record.\n")
     connection.commit()
 
-#-----------------VIEW FUNCTIONS-----------------#
-
 #-----------------RETRIEVALS-----------------#
+
+# To display all details of products of a particular brand
+def displayProductDetails():
+    brand = input("Enter brand: ")
+    cursor.execute("SELECT * FROM Product WHERE Brand = %s", (brand,))
+    print(tabulate(cursor.fetchall(), headers="keys", tablefmt="psql"))
+
+
+# To display names of employees with salary greater than a given amount
+def displayEmployee():
+    minSalary = input("Enter minimum salary: ")
+    cursor.execute("SELECT First_name,Last_name FROM Employee WHERE Salary > %s",(minSalary,))
+    print(tabulate(cursor.fetchall(), headers="keys", tablefmt="psql"))
+
+
+# To display average stars of a given product ID
+def averageStars():
+    productID = input("Enter product ID: ")
+    cursor.execute("SELECT AVG(Stars) FROM Review WHERE Product_ID = %s", (productID,))
+    stars = cursor.fetchone()["AVG(Stars)"]
+    if stars is None:
+        print(f"\nINSERTION ERROR: Product with ID {productID} not found.\n")
+        return
+        
+    print(stars)
+
+
+# To search by name for orders shipped by a shipping company
+def ordersShippedByCompany():
+    shipperName = input("Enter shipping company name (partial match): ")
+    cursor.execute("SELECT * FROM Shipping_company WHERE Company_name LIKE %s", (shipperName + '%',))
+    rowList = cursor.fetchall()
+
+    data = []   
+    headers = ["Order ID", "Date", "Company Name"]
+    
+    for row in rowList:
+        cursor.execute("SELECT * FROM Orders WHERE Shipping_company_ID = %s", (row["Company_ID"],))
+        for row_1 in cursor.fetchall():
+            data.append([row_1["Order_ID"], row_1["Order_date"], row["Company_name"]])
+
+    print(tabulate(data, headers=headers, tablefmt="psql"))
+
+
+# To display analysis report for average rating of all products supplied by a given Supplier ID
+def avgRatingOfSupplier():
+    supplier = input("Enter supplier ID: ")
+    cursor.execute("SELECT Product_ID FROM Product WHERE Supplier_ID = %s", (supplier,))
+    productsSupplied = cursor.fetchall()
+
+    if productsSupplied is None:
+        print(f"\nEXECUTION ERROR: Supplier with ID {supplier} not found.\n")
+        return
+
+    starSum = 0
+    starNum = 0
+
+    try: 
+        for prod in productsSupplied:
+            productID = prod["Product_ID"]
+            cursor.execute("SELECT COUNT(Product_ID) FROM Review WHERE Product_ID = %s", (productID,))
+            starNum += cursor.fetchone()["COUNT(Product_ID)"]
+            cursor.execute("SELECT SUM(Stars) FROM Review WHERE Product_ID = %s", (productID,))
+            starSum += cursor.fetchone()["SUM(Stars)"]
+            
+        print(starSum/starNum)
+    except:
+        print("\nEXECUTION ERROR: Failed to execute query.\n")
+
+
+# To display analysis report of number of products of a particular category ordered
+def numberOfProductsOfCategoryOrdered():
+    category = input("Enter category: ")
+    cursor.execute("SELECT Product_ID FROM Product WHERE Category = %s", (category,))
+    productsSupplied = cursor.fetchall()
+
+    count = 0
+
+    for prod in productsSupplied:
+        productID = prod["Product_ID"]
+        cursor.execute("SELECT COUNT(Product_ID) FROM Product_purchased WHERE Product_ID = %s", (productID,))
+        count += cursor.fetchone()["COUNT(Product_ID)"]
+
+    print(count)
+    
+
+# To display analysis report of total profit from the orders in the past 3 months
+def profitIn3Months():
+    netProfit = 0
+
+    cursor.execute("SELECT Order_ID FROM Orders WHERE Order_date >= DATE_ADD(NOW(), INTERVAL -3 MONTH)")
+    for row in cursor.fetchall():
+        cursor.execute("SELECT SUM(Amount) FROM Payment WHERE Order_ID = %s", (row["Order_ID"]))
+        netProfit += cursor.fetchone()["SUM(Amount)"]
+
+    print(netProfit)
 
 #-----------------ADDITIONAL FUNCTIONS-----------------#
 
@@ -786,7 +881,56 @@ def numProductsListed():
 
     try:
         cursor.execute(query, (supplierID,))
-        print(f"\nNumber of products listed by supplier with ID {supplierID}: {cursor.fetchone()['COUNT(*)']}\n")
+        value = cursor.fetchone()['COUNT(*)']
+        if value is None:
+            print(f"\nEXECUTION ERROR: Supplier with ID {supplierID} not found.\n")
+            return
+
+        print(f"\nNumber of products listed by supplier with ID {supplierID}: {value}\n")
+    except:
+        print("\nEXECUTION ERROR: Failed to execute query.\n")
+
+
+# To derive the age of a customer from date of birth
+def deriveCustomerAge():
+    customerID = input("Enter customer ID: ")
+    cursor.execute("SELECT * FROM Customer WHERE Customer_ID = %s", (customerID,))
+    row = cursor.fetchone()
+    if row is None:
+        print(f"\nEXECUTION ERROR: Customer with ID {customerID} not found.\n")
+        return
+    
+    try:
+        day = row["Day_of_birth"]
+        month = row["Month_of_birth"]
+        year = row["Year_of_birth"]
+    
+        today = date.today()
+        age = today.year - year - ((today.month, today.day) < (month, day))
+    
+        print(age)
+    except:
+        print("\nEXECUTION ERROR: Failed to execute query.\n")
+
+
+# To derive the age of an employee from date of birth
+def deriveEmployeeAge():
+    employeeID = input("Enter employee ID: ")
+    cursor.execute("SELECT * FROM Employee WHERE Employee_ID = %s", (employeeID,))
+    row = cursor.fetchone()
+    if row is None:
+        print(f"\nEXECUTION ERROR: Employee with ID {employeeID} not found.\n")
+        return
+    
+    try:
+        day = row["Day_of_birth"]
+        month = row["Month_of_birth"]
+        year = row["Year_of_birth"]
+    
+        today = date.today()
+        age = today.year - year - ((today.month, today.day) < (month, day))
+    
+        print(age)
     except:
         print("\nEXECUTION ERROR: Failed to execute query.\n")
 
@@ -794,7 +938,7 @@ def numProductsListed():
 
 # Creating a cursor to execute queries
 with connection.cursor() as cursor:
-    updateShippingCompany()
+    pass
 
 # Closing the connection
 connection.close()
