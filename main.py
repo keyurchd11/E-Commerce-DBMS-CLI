@@ -2,6 +2,8 @@ import pymysql
 import pymysql.cursors
 import os
 import sys
+import subprocess as sp
+import time
 from tabulate import tabulate
 from datetime import date
 from dotenv import load_dotenv
@@ -797,8 +799,8 @@ def averageStars():
     if stars is None:
         print(f"\nINSERTION ERROR: Product with ID {productID} not found.\n")
         return
-        
-    print(stars)
+
+    print(f"Average number of stars: {stars}")
 
 
 # To search by name for orders shipped by a shipping company
@@ -839,7 +841,7 @@ def avgRatingOfSupplier():
             cursor.execute("SELECT SUM(Stars) FROM Review WHERE Product_ID = %s", (productID,))
             starSum += cursor.fetchone()["SUM(Stars)"]
             
-        print(starSum/starNum)
+        print(f"Average rating: {starSum/starNum}")
     except:
         print("\nEXECUTION ERROR: Failed to execute query.\n")
 
@@ -857,7 +859,7 @@ def numberOfProductsOfCategoryOrdered():
         cursor.execute("SELECT COUNT(Product_ID) FROM Product_purchased WHERE Product_ID = %s", (productID,))
         count += cursor.fetchone()["COUNT(Product_ID)"]
 
-    print(count)
+    print(f"Number of products: {count}")
     
 
 # To display analysis report of total profit from the orders in the past 3 months
@@ -869,13 +871,12 @@ def profitIn3Months():
         cursor.execute("SELECT SUM(Amount) FROM Payment WHERE Order_ID = %s", (row["Order_ID"]))
         netProfit += cursor.fetchone()["SUM(Amount)"]
 
-    print(netProfit)
+    print(f"Net profit in last 3 months:{netProfit}")
 
 #-----------------ADDITIONAL FUNCTIONS-----------------#
 
 # To find the number of products listed by a Supplier from the Products table
 def numProductsListed():
-    print("DISPLAY NUMBER OF PRODUCTS LISTED BY SUPPLIER:\n")
     supplierID = input("Enter supplier ID: ")
     query = "SELECT COUNT(*) FROM Product WHERE Supplier_ID = %s"
 
@@ -908,7 +909,7 @@ def deriveCustomerAge():
         today = date.today()
         age = today.year - year - ((today.month, today.day) < (month, day))
     
-        print(age)
+        print(f"Age: {age}")
     except:
         print("\nEXECUTION ERROR: Failed to execute query.\n")
 
@@ -930,15 +931,246 @@ def deriveEmployeeAge():
         today = date.today()
         age = today.year - year - ((today.month, today.day) < (month, day))
     
-        print(age)
+        print(f"Age: {age}")
     except:
         print("\nEXECUTION ERROR: Failed to execute query.\n")
 
+#-----------------MENU FUNCTIONS-----------------#
+
+# Menu to access insertion queries
+def insertFunctions():
+    print("\n-----INSERTION FUNCTIONS-----\n")
+    print("Choose an operation:\n")
+    print("1. Insert Customer")
+    print("2. Insert Employee")
+    print("3. Insert Product")
+    print("4. Insert Order")
+    print("5. Insert Supplier")
+    print("6. Insert Shipping Company")
+    print("7. Insert Review")
+    print("8. Return")
+
+    option = int(input("\nEnter option: "))
+
+    if option < 1 or option > 8:
+        print("\nERROR: Invalid option entered.\n")
+        time.sleep(2)
+        return
+
+    sp.call("clear", shell=True)
+
+    if option == 1:
+        insertCustomer()
+    elif option == 2:
+        insertEmployee()
+    elif option == 3:
+        insertProduct()
+    elif option == 4:
+        insertOrder()
+    elif option == 5:
+        insertSupplier()
+    elif option == 6:
+        insertShippingCompany()
+    elif option == 7:
+        insertReview()
+    elif option == 8:
+        return
+
+    time.sleep(2)
+
+
+# Menu to access deletion queries
+def deleteFunctions():
+    print("\n-----DELETION FUNCTIONS-----\n")
+    print("Choose an operation:\n")
+    print("1. Delete Customer")
+    print("2. Delete Employee")
+    print("3. Delete Product")
+    print("4. Delete Order")
+    print("5. Delete Supplier")
+    print("6. Delete Shipping Company")
+    print("7. Delete Review")
+    print("8. Return")
+
+    option = int(input("\nEnter option: "))
+
+    if option < 1 or option > 8:
+        print("\nERROR: Invalid option entered.\n")
+        time.sleep(2)
+        return
+
+    sp.call("clear", shell=True)
+
+    if option == 1:
+        deleteCustomer()
+    elif option == 2:
+        deleteEmployee()
+    elif option == 3:
+        deleteProduct()
+    elif option == 4:
+        deleteOrder()
+    elif option == 5:
+        deleteSupplier()
+    elif option == 6:
+        deleteShippingCompany()
+    elif option == 7:
+        deleteReview()
+    elif option == 8:
+        return
+
+    time.sleep(2)
+
+
+# Menu to access update queries
+def updateFunctions():
+    print("\n-----UPDATION FUNCTIONS-----\n")
+    print("Choose an operation:\n")
+    print("1. Update Customer")
+    print("2. Update Employee")
+    print("3. Update Product")
+    print("4. Update Supplier")
+    print("5. Update Shipping Company")
+    print("6. Return")
+
+    option = int(input("\nEnter option: "))
+
+    if option < 1 or option > 6:
+        print("\nERROR: Invalid option entered.\n")
+        time.sleep(2)
+        return
+
+    sp.call("clear", shell=True)
+
+    if option == 1:
+        updateCustomer()
+    elif option == 2:
+        updateEmployee()
+    elif option == 3:
+        updateProduct()
+    elif option == 4:
+        updateSupplier()
+    elif option == 5:
+        updateShippingCompany()
+    elif option == 6:
+        return
+
+    time.sleep(2)
+
+
+# Menu to access data retrieval functions
+def dataRetrieval():
+    print("\n-----DATA RETRIEVAL FUNCTIONS-----\n")
+    print("Choose an operation:\n")
+    print("1. Display all details of products of a particular brand")
+    print("2. Display the names of employees with salary greater than a certain amount")
+    print("3. Diplay the average number of stars for a particular product")
+    print("4. Search for orders shipped by a particular shipping company by name")
+    print("5. Average rating of all products supplied by a given supplier")
+    print("6. Number of products of a particular category ordered")
+    print("7. Total profit from orders in the last 3 months")
+    print("8. Return")
+
+    option = int(input("\nEnter option: "))
+
+    if option < 1 or option > 8:
+        print("\nERROR: Invalid option entered.\n")
+        time.sleep(2)
+        return
+
+    sp.call("clear", shell=True)
+
+    if option == 1:
+        displayProductDetails()
+    elif option == 2:
+        displayEmployee()
+    elif option == 3:
+        averageStars()
+    elif option == 4:
+        ordersShippedByCompany()
+    elif option == 5:
+        avgRatingOfSupplier()
+    elif option == 6:
+        numberOfProductsOfCategoryOrdered()
+    elif option == 7:
+        profitIn3Months()
+    elif option == 8:
+        return
+
+    time.sleep(2)
+
+
+# Menu to access additional functions
+def additionalFunctions():
+    print("\n-----ADDITIONAL FUNCTIONS-----\n")
+    print("Choose an operation:\n")
+    print("1. Display number of products listed by a particular supplier")
+    print("2. Calculate customer age")
+    print("3. Calculate employee age")
+    print("4. Return")
+
+    option = int(input("\nEnter option: "))
+
+    if option < 1 or option > 4:
+        print("\nERROR: Invalid option entered.\n")
+        time.sleep(2)
+        return
+
+    sp.call("clear", shell=True)
+
+    if option == 1:
+        numProductsListed()
+    elif option == 2:
+        deriveCustomerAge()
+    elif option == 3:
+        deriveEmployeeAge()
+    elif option == 4:
+        return
+
+    time.sleep(2)
+
 #-----------------MAIN LOOP-----------------#
 
-# Creating a cursor to execute queries
-with connection.cursor() as cursor:
-    pass
+while True:
+    try:
+        sp.call("clear", shell=True)
+
+        # Creating a cursor to execute queries
+        with connection.cursor() as cursor:
+            print("\n-----eCOMMERCE WEBSITE DATABASE CLI-----\n")
+            print("Choose an operation:\n")
+            print("1. Insert new record")
+            print("2. Delete existing record")
+            print("3. Update existing record")
+            print("4. Data Retrieval")
+            print("5. Additional Functions")
+            print("6. Exit")
+
+            option = int(input("\nEnter option: "))
+
+            if option < 1 or option > 6:
+                print("\nERROR: Invalid option entered. Please try again.\n")
+                time.sleep(2)
+                continue
+
+            sp.call("clear", shell=True)
+
+            if option == 1:
+                insertFunctions()
+            elif option == 2:
+                deleteFunctions()
+            elif option == 3:
+                updateFunctions()
+            elif option == 4:
+                dataRetrieval()
+            elif option == 5:
+                additionalFunctions()
+            elif option == 6:
+                print("\nThank you for using the program!\n")
+                break
+
+    except:
+        print("\nUNEXPECTED ERRORS: Exiting program.\n")
+        break
 
 # Closing the connection
 connection.close()
