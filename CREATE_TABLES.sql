@@ -91,7 +91,7 @@ CREATE TABLE Product(
     Selling_price INTEGER NOT NULL,
     Available_quantity INTEGER NOT NULL,
     In_stock BOOL NOT NULL,
-    PRIMARY KEY(Product_ID)
+    PRIMARY KEY(Product_ID),
     FOREIGN KEY(Supplier_ID) REFERENCES Supplier(Supplier_ID) ON DELETE CASCADE
 );
 

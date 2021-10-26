@@ -779,99 +779,88 @@ def updateShippingCompany():
 
 # To display all details of products of a particular brand
 def displayProductDetails():
-    brand = input("Enter brand: ")
-    cursor.execute("SELECT * FROM Product WHERE Brand = %s", (brand,))
-    print(tabulate(cursor.fetchall(), headers="keys", tablefmt="psql"))
+    try:
+        brand = input("Enter brand: ")
+        cursor.execute("SELECT * FROM Product WHERE Brand = %s", (brand,))
+        print(tabulate(cursor.fetchall(), headers="keys", tablefmt="psql"))
+    except Exception as e:
+        print(f"\nEXECUTION ERROR: Failed to execute query - {e}\n")
 
 
 # To display names of employees with salary greater than a given amount
 def displayEmployee():
-    minSalary = input("Enter minimum salary: ")
-    cursor.execute("SELECT First_name,Last_name FROM Employee WHERE Salary > %s",(minSalary,))
-    print(tabulate(cursor.fetchall(), headers="keys", tablefmt="psql"))
+    try:
+        minSalary = input("Enter minimum salary: ")
+        cursor.execute("SELECT First_name,Last_name FROM Employee WHERE Salary > %s",(minSalary,))
+        print(tabulate(cursor.fetchall(), headers="keys", tablefmt="psql"))
+    except Exception as e:
+        print(f"\nEXECUTION ERROR: Failed to execute query - {e}\n")
 
 
 # To display average stars of a given product ID
 def averageStars():
-    productID = input("Enter product ID: ")
-    cursor.execute("SELECT AVG(Stars) FROM Review WHERE Product_ID = %s", (productID,))
-    stars = cursor.fetchone()["AVG(Stars)"]
-    if stars is None:
-        print(f"\nINSERTION ERROR: Product with ID {productID} not found.\n")
-        return
+    try:
+        productID = input("Enter product ID: ")
+        cursor.execute("SELECT AVG(Stars) FROM Review WHERE Product_ID = %s", (productID,))
+        stars = cursor.fetchone()["AVG(Stars)"]
+        if stars is None:
+            print(f"\nINSERTION ERROR: Product with ID {productID} not found.\n")
+            return
 
-    print(f"Average number of stars: {stars}")
+        print(f"Average number of stars: {stars}")
+    except Exception as e:
+        print(f"\nEXECUTION ERROR: Failed to execute query - {e}\n")
 
 
 # To search by name for orders shipped by a shipping company
 def ordersShippedByCompany():
-    shipperName = input("Enter shipping company name (partial match): ")
-    cursor.execute("SELECT * FROM Shipping_company WHERE Company_name LIKE %s", (shipperName + '%',))
-    rowList = cursor.fetchall()
-
-    data = []   
-    headers = ["Order ID", "Date", "Company Name"]
-    
-    for row in rowList:
-        cursor.execute("SELECT * FROM Orders WHERE Shipping_company_ID = %s", (row["Company_ID"],))
-        for row_1 in cursor.fetchall():
-            data.append([row_1["Order_ID"], row_1["Order_date"], row["Company_name"]])
-
-    print(tabulate(data, headers=headers, tablefmt="psql"))
+    try:
+        shipperName = input("Enter shipping company name (partial match): ")
+        cursor.execute("SELECT * FROM Orders WHERE Shipping_company_ID IN (SELECT Company_ID FROM Shipping_company WHERE Company_name LIKE %s)", (shipperName + '%',))
+        print(tabulate(cursor.fetchall(), headers="keys", tablefmt="psql"))
+    except Exception as e:
+        print(f"\nEXECUTION ERROR: Failed to execute query - {e}\n")
 
 
 # To display analysis report for average rating of all products supplied by a given Supplier ID
 def avgRatingOfSupplier():
     supplier = input("Enter supplier ID: ")
     cursor.execute("SELECT Product_ID FROM Product WHERE Supplier_ID = %s", (supplier,))
-    productsSupplied = cursor.fetchall()
 
-    if productsSupplied is None:
+    if cursor.fetchone() is None:
         print(f"\nEXECUTION ERROR: Supplier with ID {supplier} not found.\n")
         return
 
-    starSum = 0
-    starNum = 0
-
     try: 
-        for prod in productsSupplied:
-            productID = prod["Product_ID"]
-            cursor.execute("SELECT COUNT(Product_ID) FROM Review WHERE Product_ID = %s", (productID,))
-            starNum += cursor.fetchone()["COUNT(Product_ID)"]
-            cursor.execute("SELECT SUM(Stars) FROM Review WHERE Product_ID = %s", (productID,))
-            starSum += cursor.fetchone()["SUM(Stars)"]
+        cursor.execute("SELECT COUNT(Product_ID) FROM Review WHERE Product_ID IN (SELECT Product_ID FROM Product WHERE Supplier_ID = %s)", (supplier,))
+        starNum = cursor.fetchone()["COUNT(Product_ID)"]
+        cursor.execute("SELECT SUM(Stars) FROM Review WHERE Product_ID IN (SELECT Product_ID FROM Product WHERE Supplier_ID = %s)", (supplier,))
+        starSum = cursor.fetchone()["SUM(Stars)"]
             
         print(f"Average rating: {starSum/starNum}")
-    except:
-        print("\nEXECUTION ERROR: Failed to execute query.\n")
+    except Exception as e:
+        print(f"\nEXECUTION ERROR: Failed to execute query - {e}\n")
 
 
 # To display analysis report of number of products of a particular category ordered
 def numberOfProductsOfCategoryOrdered():
-    category = input("Enter category: ")
-    cursor.execute("SELECT Product_ID FROM Product WHERE Category = %s", (category,))
-    productsSupplied = cursor.fetchall()
-
-    count = 0
-
-    for prod in productsSupplied:
-        productID = prod["Product_ID"]
-        cursor.execute("SELECT COUNT(Product_ID) FROM Product_purchased WHERE Product_ID = %s", (productID,))
-        count += cursor.fetchone()["COUNT(Product_ID)"]
-
-    print(f"Number of products: {count}")
+    try:
+        category = input("Enter category: ")
+        cursor.execute("SELECT COUNT(Product_ID) FROM Product_purchased WHERE Product_ID IN (SELECT Product_ID FROM Product WHERE Category = %s)", (category,))
+        count = cursor.fetchone()["COUNT(Product_ID)"]
+        print(f"Number of products: {count}")
+    except Exception as e:
+        print(f"\nEXECUTION ERROR: Failed to execute query - {e}\n")
     
 
 # To display analysis report of total profit from the orders in the past 3 months
 def profitIn3Months():
-    netProfit = 0
-
-    cursor.execute("SELECT Order_ID FROM Orders WHERE Order_date >= DATE_ADD(NOW(), INTERVAL -3 MONTH)")
-    for row in cursor.fetchall():
-        cursor.execute("SELECT SUM(Amount) FROM Payment WHERE Order_ID = %s", (row["Order_ID"]))
-        netProfit += cursor.fetchone()["SUM(Amount)"]
-
-    print(f"Net profit in last 3 months:{netProfit}")
+    try:
+        cursor.execute("SELECT SUM(Amount) FROM Payment WHERE Order_ID IN (SELECT Order_ID FROM Orders WHERE Order_date >= DATE_ADD(NOW(), INTERVAL -3 MONTH))")
+        netProfit = cursor.fetchone()["SUM(Amount)"]
+        print(f"Net profit in last 3 months:{netProfit}")
+    except Exception as e:
+        print(f"\nEXECUTION ERROR: Failed to execute query - {e}\n")
 
 #-----------------ADDITIONAL FUNCTIONS-----------------#
 
@@ -888,8 +877,8 @@ def numProductsListed():
             return
 
         print(f"\nNumber of products listed by supplier with ID {supplierID}: {value}\n")
-    except:
-        print("\nEXECUTION ERROR: Failed to execute query.\n")
+    except Exception as e:
+        print(f"\nEXECUTION ERROR: Failed to execute query - {e}\n")
 
 
 # To derive the age of a customer from date of birth
@@ -906,12 +895,10 @@ def deriveCustomerAge():
         month = row["Month_of_birth"]
         year = row["Year_of_birth"]
     
-        today = date.today()
-        age = today.year - year - ((today.month, today.day) < (month, day))
-    
-        print(f"Age: {age}")
-    except:
-        print("\nEXECUTION ERROR: Failed to execute query.\n")
+        cursor.execute("SELECT TIMESTAMPDIFF(YEAR,'%s-%s-%s',CURDATE()) as Age FROM Customer WHERE Customer_ID = %s", (year, month, day, customerID))
+        print(f"Age: {cursor.fetchone()['Age']}")
+    except Exception as e:
+        print(f"\nEXECUTION ERROR: Failed to execute query - {e}\n")
 
 
 # To derive the age of an employee from date of birth
@@ -928,12 +915,10 @@ def deriveEmployeeAge():
         month = row["Month_of_birth"]
         year = row["Year_of_birth"]
     
-        today = date.today()
-        age = today.year - year - ((today.month, today.day) < (month, day))
-    
-        print(f"Age: {age}")
-    except:
-        print("\nEXECUTION ERROR: Failed to execute query.\n")
+        cursor.execute("SELECT TIMESTAMPDIFF(YEAR,'%s-%s-%s',CURDATE()) as Age FROM Employee WHERE Employee_ID = %s", (year, month, day, employeeID))
+        print(f"Age: {cursor.fetchone()['Age']}")
+    except Exception as e:
+        print(f"\nEXECUTION ERROR: Failed to execute query - {e}\n")
 
 #-----------------MENU FUNCTIONS-----------------#
 
