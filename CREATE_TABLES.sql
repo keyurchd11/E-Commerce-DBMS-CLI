@@ -163,6 +163,7 @@ CREATE TABLE Payment(
     Amount INTEGER NOT NULL,
     Mode_of_payment VARCHAR(20) NOT NULL,
     Discount_Percentage INTEGER NOT NULL,
+    CHECK (Discount_Percentage >= 0 AND Discount_Percentage <= 100),
     FOREIGN KEY(Order_ID) REFERENCES Orders(Order_ID) ON DELETE CASCADE
 );
 
