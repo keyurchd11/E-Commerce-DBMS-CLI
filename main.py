@@ -858,7 +858,7 @@ def profitIn3Months():
     try:
         cursor.execute("SELECT SUM(Amount) FROM Payment WHERE Order_ID IN (SELECT Order_ID FROM Orders WHERE Order_date >= DATE_ADD(NOW(), INTERVAL -3 MONTH))")
         netProfit = cursor.fetchone()["SUM(Amount)"]
-        print(f"Net profit in last 3 months:{netProfit}")
+        print(f"Net profit in last 3 months: {netProfit}")
     except Exception as e:
         print(f"\nEXECUTION ERROR: Failed to execute query - {e}\n")
 
