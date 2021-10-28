@@ -52,9 +52,25 @@ MYSQL_PASSWORD="xxx"
 MYSQL_DATABASE="xxx"
 ``` 
 
-5. Everything is now set up. To run the CLI,
+5. You will need to install the required modules to run the CLI. Optionally, you can choose to create a virtual environment for this purpose.
+```bash
+python3 -m venv <venv_name>
+source <venv_name>/bin/activate
+```
+
+6. Install the required modules within your virtual environment.
+```bash
+pip install -r requirements.txt
+```
+
+7. Everything is now set up. To run the CLI,
 ```bash
 python3 main.py
+```
+
+<b>Note: </b>To exit the virtual environment,
+```bash
+deactivate
 ```
 
 ## Functions
