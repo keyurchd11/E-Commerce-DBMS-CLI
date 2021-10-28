@@ -52,7 +52,7 @@ MYSQL_PASSWORD="xxx"
 MYSQL_DATABASE="xxx"
 ``` 
 
-5. You will need to install the required modules to run the CLI. Optionally, you can choose to create a virtual environment for this purpose.
+5. You will need to install the required modules to run the CLI. You can choose to create a virtual environment for this purpose. Note that this step is completely optional, and can be skipped.
 ```bash
 python3 -m venv <venv_name>
 source <venv_name>/bin/activate
