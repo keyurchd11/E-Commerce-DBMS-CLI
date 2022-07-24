@@ -8,6 +8,11 @@ This is a CLI for an eCommerce DBMS. Users can interact with it to insert, delet
 2. <a href="https://github.com/keyurchd11">Keyur Chaudhari</a>
 3. <a href="https://github.com/coniferousdyer">Arjun Muraleedharan</a>
 
+The final relational model, mapped from the ER model and normalized to 3NF:
+<p align="center">
+    <img src="model.png" width="250"/>
+</p>
+
 ## Setup
 
 1. You must have MySQL Server installed. To do so,
